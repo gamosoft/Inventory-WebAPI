@@ -9,6 +9,7 @@ http://fiddlertreeviewpanel.codeplex.com/
 The WebAPI works by default with JSON, but can also work with XML data (using the corresponding headers in Fiddler for example).
 
 TODO: Swagger is only for net.Core???
+TODO: Host it in Azure and have Runscope???
 
 
 # Design notes:

@@ -10,19 +10,16 @@ namespace Inventory.WebAPI.Controllers
 {
     /// <summary>
     /// Controller for Inventory operations
-    // TODO: Host it in Azure and have Runscope???
     /// </summary>
     public class InventoryController : ApiController
     {
         #region "Methods"
 
         /// <summary>
-        /// Private static constructor used to initialize in memory inventory with dummy data on first run
+        /// Private static constructor used to initialize in memory inventory with dummy data on first run if needed
         /// </summary>
         static InventoryController()
         {
-            // TODO: Remove this for deployment
-            InventorySingleton.Instance.InitializeDummyData();
         }
 
         /// <summary>
@@ -43,19 +40,12 @@ namespace Inventory.WebAPI.Controllers
         /// <returns>Item removed from the inventory</returns>
         public Item Get(string label)
         {
-            if (String.IsNullOrEmpty(label))
+            var result = InventorySingleton.Instance.GetByLabel(label);
+            if (result == null)
             {
-                throw new HttpResponseException(Request.CreateResponse((HttpStatusCode)422, "Label was null or empty"));
+                throw new HttpResponseException(HttpStatusCode.NotFound);
             }
-            else
-            {
-                var result = InventorySingleton.Instance.GetByLabel(label);
-                if (result == null)
-                {
-                    throw new HttpResponseException(HttpStatusCode.NotFound);
-                }
-                return result;
-            }
+            return result;
         }
 
         // POST api/<controller>
@@ -64,9 +54,13 @@ namespace Inventory.WebAPI.Controllers
             var result = InventorySingleton.Instance.Add(value);
             if (!String.IsNullOrEmpty(result))
             {
-                throw new HttpResponseException(Request.CreateResponse((HttpStatusCode)422, result));
-            }
+                HttpResponseMessage resp = new HttpResponseMessage((HttpStatusCode)422)
+                {
+                    Content = new StringContent(result)
+                };
 
+                throw new HttpResponseException(resp);
+            }
         }
 
         #endregion "Methods"

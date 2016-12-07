@@ -102,9 +102,27 @@ namespace Inventory.DAL
         /// </summary>
         public void InitializeDummyData()
         {
-            _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item1", Expiration = DateTime.Now.AddMinutes(5), Type = ItemType.TypeA });
-            _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item2", Expiration = DateTime.Now.AddMinutes(10), Type = ItemType.TypeB });
-            _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item3", Expiration = DateTime.Now.AddMinutes(15), Type = ItemType.TypeC });
+            _repository.Add(new Item()
+            {
+                ID = Guid.NewGuid(),
+                Label = "item1",
+                Expiration = DateTime.Now.AddMinutes(5),
+                Type = ItemType.TypeA
+            });
+            _repository.Add(new Item()
+            {
+                ID = Guid.NewGuid(),
+                Label = "item2",
+                Expiration = DateTime.Now.AddMinutes(10),
+                Type = ItemType.TypeB
+            });
+            _repository.Add(new Item()
+            {
+                ID = Guid.NewGuid(),
+                Label = "item3",
+                Expiration = DateTime.Now.AddMinutes(15),
+                Type = ItemType.TypeC
+            });
         }
 
         #endregion "Methods"
