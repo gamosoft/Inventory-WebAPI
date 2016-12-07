@@ -26,7 +26,7 @@ namespace Inventory.Tests
             {
                 ID = Guid.NewGuid(),
                 Label = "item1",
-                Expiration = DateTime.Now.AddMinutes(5),
+                Expiration = DateTime.Now.AddSeconds(30),
                 Type = ItemType.TypeA
             });
             InventorySingleton.Instance.Add(new Item()

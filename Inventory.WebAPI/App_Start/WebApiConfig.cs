@@ -17,7 +17,7 @@ namespace Inventory.WebAPI
             config.Routes.MapHttpRoute(
                 name: "InventoryApi",
                 routeTemplate: "api/{controller}/{label}",
-                defaults: new { id = RouteParameter.Optional }
+                defaults: new { label = RouteParameter.Optional }
             );
         }
     }

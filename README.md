@@ -33,6 +33,8 @@ Now I'm a huge fan of Enterprise Library to handle "logging" so I would probably
 For the sake of simplicity in this sample however I'll just use regular SMTP server to send the notifications.
 - Since I don't have an SMTP server configured, the best way to try out the notifications is to use smtp4dev tool (http://smtp4dev.codeplex.com/)
 
+- For the expiration part, one way to do it could be using the CacheManager class
+
 # Assumptions:
 - No dealing with encoding/decoding issues from the requests (i.e.: blank spaces or strange characters).
 - No dealing with string constants for error messages.

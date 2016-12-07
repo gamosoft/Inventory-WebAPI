@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 
 namespace Inventory.DAL
 {
@@ -15,6 +16,7 @@ namespace Inventory.DAL
         private static volatile InventorySingleton instance;
         private static object syncRoot = new Object();
         private List<Item> _repository;
+        private static volatile MemoryCache cache;
 
         #endregion "Variables"
 
@@ -50,6 +52,8 @@ namespace Inventory.DAL
         private InventorySingleton()
         {
             _repository = new List<Item>();
+            cache = new MemoryCache("Inventory");
+            InitializeDummyData();
         }
 
         /// <summary>
@@ -69,8 +73,19 @@ namespace Inventory.DAL
                 return "Label already exists";
             }
             _repository.Add(item);
+
+            // TODO: check where this goes
+            CacheItemPolicy policy = new CacheItemPolicy()
+            {
+                // AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(15),
+                SlidingExpiration = item.Expiration.Subtract(DateTime.Now),
+                RemovedCallback = CachedItemRemovedCallback
+            };
+            cache.Add(item.Label, item, policy);
+
             return String.Empty;
         }
+
 
         /// <summary>
         /// Gets all the items in the inventory
@@ -97,30 +112,36 @@ namespace Inventory.DAL
             return result;
         }
 
+
+        private void CachedItemRemovedCallback(CacheEntryRemovedArguments arguments)
+        {
+            NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
+        }
+
         /// <summary>
         /// Sample method for testing purposes
         /// </summary>
         public void InitializeDummyData()
         {
-            _repository.Add(new Item()
+            this.Add(new Item()
             {
                 ID = Guid.NewGuid(),
                 Label = "item1",
-                Expiration = DateTime.Now.AddMinutes(5),
+                Expiration = DateTime.Now.AddSeconds(20),
                 Type = ItemType.TypeA
             });
-            _repository.Add(new Item()
+            this.Add(new Item()
             {
                 ID = Guid.NewGuid(),
                 Label = "item2",
-                Expiration = DateTime.Now.AddMinutes(10),
+                Expiration = DateTime.Now.AddSeconds(30),
                 Type = ItemType.TypeB
             });
-            _repository.Add(new Item()
+            this.Add(new Item()
             {
                 ID = Guid.NewGuid(),
                 Label = "item3",
-                Expiration = DateTime.Now.AddMinutes(15),
+                Expiration = DateTime.Now.AddSeconds(40),
                 Type = ItemType.TypeC
             });
         }
