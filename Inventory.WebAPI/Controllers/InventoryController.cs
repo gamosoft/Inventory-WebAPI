@@ -61,24 +61,12 @@ namespace Inventory.WebAPI.Controllers
         // POST api/<controller>
         public void Post([FromBody]Item value)
         {
-            // TODO: Race condition if adding expiration in, say, 1 second and it expires while web request is being processed
-
             var result = InventorySingleton.Instance.Add(value);
             if (!String.IsNullOrEmpty(result))
             {
                 throw new HttpResponseException(Request.CreateResponse((HttpStatusCode)422, result));
             }
 
-        }
-
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody]Item value)
-        {
-        }
-
-        // DELETE api/<controller>/5
-        public void Delete(int id)
-        {
         }
 
         #endregion "Methods"
