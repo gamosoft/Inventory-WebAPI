@@ -5,8 +5,17 @@ using System.Web.Http;
 
 namespace Inventory.WebAPI
 {
+    /// <summary>
+    /// Class used to define configuration values for the Web API
+    /// </summary>
     public static class WebApiConfig
     {
+        #region "Methods"
+
+        /// <summary>
+        /// Main registration method
+        /// </summary>
+        /// <param name="config">HttpConfiguration</param>
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services
@@ -20,5 +29,7 @@ namespace Inventory.WebAPI
                 defaults: new { label = RouteParameter.Optional }
             );
         }
+
+        #endregion "Methods"
     }
 }

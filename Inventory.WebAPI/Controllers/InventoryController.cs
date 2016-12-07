@@ -48,7 +48,10 @@ namespace Inventory.WebAPI.Controllers
             return result;
         }
 
-        // POST api/<controller>
+        /// <summary>
+        /// Adds an item to the repository
+        /// </summary>
+        /// <param name="value">Item to add</param>
         public void Post([FromBody]Item value)
         {
             var result = InventorySingleton.Instance.Add(value);
@@ -58,7 +61,6 @@ namespace Inventory.WebAPI.Controllers
                 {
                     Content = new StringContent(result)
                 };
-
                 throw new HttpResponseException(resp);
             }
         }
