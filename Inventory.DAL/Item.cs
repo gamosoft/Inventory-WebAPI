@@ -15,11 +15,6 @@ namespace Inventory.DAL
         #region "Properties"
 
         /// <summary>
-        /// Gets/sets the ID
-        /// </summary>
-        public Guid ID { get; set; }
-
-        /// <summary>
         /// Gets/sets the label
         /// </summary>
         public string Label { get; set; }

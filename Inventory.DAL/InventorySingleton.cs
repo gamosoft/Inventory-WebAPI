@@ -63,26 +63,25 @@ namespace Inventory.DAL
         /// <returns>Empty if all went well, otherwise error message</returns>
         public string Add(Item item)
         {
-            if (item.Expiration <= DateTime.Now)
+            lock (syncRoot)
             {
-                return "Item already expired";
+                if (item.Expiration <= DateTime.Now)
+                {
+                    return "Item already expired";
+                }
+                // Simple lowercase check to see that label doesn't exist
+                if (_repository.Any(i => i.Label.ToLower() == item.Label.ToLower()))
+                {
+                    return "Label already exists";
+                }
+                _repository.Add(item);
+                CacheItemPolicy policy = new CacheItemPolicy()
+                {
+                    AbsoluteExpiration = new DateTimeOffset(item.Expiration),
+                    RemovedCallback = CachedItemRemovedCallback
+                };
+                cache.Add(item.Label, item, policy);
             }
-            // Simple lowercase check to see that label doesn't exist
-            if (_repository.Any(i => i.Label.ToLower() == item.Label.ToLower()))
-            {
-                return "Label already exists";
-            }
-            _repository.Add(item);
-
-            // TODO: check where this goes
-            CacheItemPolicy policy = new CacheItemPolicy()
-            {
-                // AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(15),
-                SlidingExpiration = item.Expiration.Subtract(DateTime.Now),
-                RemovedCallback = CachedItemRemovedCallback
-            };
-            cache.Add(item.Label, item, policy);
-
             return String.Empty;
         }
 
@@ -96,23 +95,33 @@ namespace Inventory.DAL
             return _repository;
         }
 
+        /// <summary>
+        /// Attempts to retrieve an item from the inventory by its label.
+        /// If found, also sends a notification.
+        /// </summary>
+        /// <param name="label">Label of the item to look for</param>
+        /// <returns>Item or null if not found</returns>
         public Item GetByLabel(string label)
         {
-            // TODO: Mays/mins.
-            var result = _repository.FirstOrDefault(i => i.Label.ToLower() == label.ToLower());
-            if (result != null)
+            Item result;
+            lock (syncRoot)
             {
-                // TODO: Make it atomic
-                _repository.Remove(result);
-                // TODO: If notification in log => do all operations in a TRANSACTION
-                NotificationManager.SendNotification(String.Format("Item '{0}' removed", result.Label));
+                result = _repository.FirstOrDefault(i => i.Label.ToLower() == label.ToLower());
+                if (result != null)
+                {
+                    _repository.Remove(result);
+                    // Remove from cache as well!
+                    cache.Remove(result.Label); // TODO: If manually removed also triggers an "expired" notification
+                    NotificationManager.SendNotification(String.Format("Item '{0}' removed", result.Label));
+                }
             }
-
-
             return result;
         }
 
-
+        /// <summary>
+        /// When an item gets removed from the cache (expires), send a notification
+        /// </summary>
+        /// <param name="arguments">CacheEntryRemovedArguments</param>
         private void CachedItemRemovedCallback(CacheEntryRemovedArguments arguments)
         {
             NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
@@ -125,21 +134,18 @@ namespace Inventory.DAL
         {
             this.Add(new Item()
             {
-                ID = Guid.NewGuid(),
                 Label = "item1",
                 Expiration = DateTime.Now.AddSeconds(20),
                 Type = ItemType.TypeA
             });
             this.Add(new Item()
             {
-                ID = Guid.NewGuid(),
                 Label = "item2",
                 Expiration = DateTime.Now.AddSeconds(30),
                 Type = ItemType.TypeB
             });
             this.Add(new Item()
             {
-                ID = Guid.NewGuid(),
                 Label = "item3",
                 Expiration = DateTime.Now.AddSeconds(40),
                 Type = ItemType.TypeC
