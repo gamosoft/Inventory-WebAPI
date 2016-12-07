@@ -89,15 +89,11 @@ namespace Inventory.DAL
             {
                 // TODO: Make it atomic
                 _repository.Remove(result);
+                // TODO: If notification in log => do all operations in a TRANSACTION
+                NotificationManager.SendNotification(String.Format("Item '{0}' removed", result.Label));
             }
-            // TODO: If notification in log => do all operations in a TRANSACTION
-            //_log.Add(new Notification()
-            //{
-            //    ID = Guid.NewGuid(),
-            //    Message = String.Format("Item '{0}' removed", result.Label),
-            //    TimeStamp = DateTime.Now,
-            //    User = "TBD"
-            //});
+
+
             return result;
         }
 
@@ -106,7 +102,7 @@ namespace Inventory.DAL
         /// </summary>
         public void InitializeDummyData()
         {
-            _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item 1", Expiration = DateTime.Now.AddMinutes(5), Type = ItemType.TypeA });
+            _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item1", Expiration = DateTime.Now.AddMinutes(5), Type = ItemType.TypeA });
             _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item2", Expiration = DateTime.Now.AddMinutes(10), Type = ItemType.TypeB });
             _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item3", Expiration = DateTime.Now.AddMinutes(15), Type = ItemType.TypeC });
         }

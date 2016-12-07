@@ -34,7 +34,7 @@ namespace Inventory.Tests
             var sample = new DAL.Item() {
                 ID = Guid.NewGuid(),
                 Label = "Sample item",
-                Expiration = DateTime.Now,
+                Expiration = DateTime.Now.AddMinutes(5),
                 Type = DAL.ItemType.TypeB
             };
             controller.Post(sample);
