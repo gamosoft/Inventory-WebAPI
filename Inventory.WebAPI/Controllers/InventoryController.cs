@@ -17,11 +17,12 @@ namespace Inventory.WebAPI.Controllers
         #region "Methods"
 
         /// <summary>
-        /// Private static constructor used to initialize in memory inventory with data on first run
+        /// Private static constructor used to initialize in memory inventory with dummy data on first run
         /// </summary>
         static InventoryController()
         {
-            InventorySingleton.Instance.Initialize();
+            // TODO: Remove this for deployment
+            InventorySingleton.Instance.InitializeDummyData();
         }
 
         /// <summary>
@@ -40,13 +41,11 @@ namespace Inventory.WebAPI.Controllers
         /// </summary>
         /// <param name="label">Label of the item</param>
         /// <returns>Item removed from the inventory</returns>
-        public Item Get([FromUri(Name = "id")]string label)
+        public Item Get(string label)
         {
-            // TODO: Encode/decode, blank spaces
-            // TODO: Cache
             if (String.IsNullOrEmpty(label))
             {
-                throw new HttpResponseException(HttpStatusCode.BadRequest); // TODO: Check response
+                throw new HttpResponseException(Request.CreateResponse((HttpStatusCode)422, "Label was null or empty"));
             }
             else
             {
@@ -64,7 +63,12 @@ namespace Inventory.WebAPI.Controllers
         {
             // TODO: Race condition if adding expiration in, say, 1 second and it expires while web request is being processed
 
-            InventorySingleton.Instance.Add(value);
+            var result = InventorySingleton.Instance.Add(value);
+            if (!String.IsNullOrEmpty(result))
+            {
+                throw new HttpResponseException(Request.CreateResponse((HttpStatusCode)422, result));
+            }
+
         }
 
         // PUT api/<controller>/5

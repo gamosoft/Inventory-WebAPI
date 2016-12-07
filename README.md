@@ -5,6 +5,7 @@ Alternatively you can also execute the web project (Inventory.WebAPI) and invoke
 [Shameless plug here, you can use the Fiddler extension I developed a while ago to make things easier] ;-)
 http://fiddlertreeviewpanel.codeplex.com/
 
+The WebAPI works by default with JSON, but can also work with XML data (using the corresponding headers in Fiddler for example).
 
 TODO: Swagger is only for net.Core???
 
@@ -20,4 +21,6 @@ http://localhost:2099/api/Inventory
 which you can use with the usual HTTP verbs to test the implementation
 
 #Assumptions:
-No dealing with encoding/decoding issues from the requests (i.e.: blank spaces or strange characters)
+No dealing with encoding/decoding issues from the requests (i.e.: blank spaces or strange characters).
+No dealing with string constants for error messages.
+HttpStatusCode 422 is not included in the .Net enumeration, so "hardcoded" it there to return a more menaningful response.

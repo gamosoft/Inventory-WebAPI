@@ -56,18 +56,20 @@ namespace Inventory.DAL
         /// Adds an item to the inventory
         /// </summary>
         /// <param name="item">Item to add</param>
-        public void Add(Item item)
+        /// <returns>Empty if all went well, otherwise error message</returns>
+        public string Add(Item item)
         {
             if (item.Expiration <= DateTime.Now)
             {
-                // Error
+                return "Item already expired";
             }
-            // Check label doesn't exist
+            // Simple lowercase check to see that label doesn't exist
             if (_repository.Any(i => i.Label.ToLower() == item.Label.ToLower()))
             {
-                // Error
+                return "Label already exists";
             }
             _repository.Add(item);
+            return String.Empty;
         }
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace Inventory.DAL
         /// <summary>
         /// Sample method for testing purposes
         /// </summary>
-        public void Initialize()
+        public void InitializeDummyData()
         {
             _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item 1", Expiration = DateTime.Now.AddMinutes(5), Type = ItemType.TypeA });
             _repository.Add(new Item() { ID = Guid.NewGuid(), Label = "item2", Expiration = DateTime.Now.AddMinutes(10), Type = ItemType.TypeB });
