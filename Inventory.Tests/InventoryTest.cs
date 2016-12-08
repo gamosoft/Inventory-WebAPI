@@ -1,10 +1,11 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Inventory.WebAPI.Controllers;
-using System.Collections;
 using System.Collections.Generic;
 using Inventory.DAL;
 using System.Web.Http;
+using System.IO;
+using System.Net.Mail;
 
 namespace Inventory.Tests
 {
@@ -144,6 +145,21 @@ namespace Inventory.Tests
                 Type = ItemType.TypeB
             };
             controller.Post(sample);
+        }
+
+        /// <summary>
+        /// Tests that an email is sent when the notification is fired
+        /// Modified the configuration file to dump messages to c:\tmp folder
+        /// Assumption that no one else is writing to the delivery folder for tests
+        /// </summary>
+        [TestMethod]
+        public void SendNotificationOK()
+        {
+            DirectoryInfo folder = new DirectoryInfo(@"c:\tmp");
+            var initialFileCount = folder.GetFiles().Length;
+            NotificationManager.SendNotification("UnitTest");
+            var finalFileCount = folder.GetFiles().Length;
+            Assert.AreEqual(initialFileCount + 1, finalFileCount);
         }
 
         #endregion "Methods"
