@@ -24,6 +24,13 @@ Now I'm a huge fan of Enterprise Library to handle "logging" so I would probably
 For the sake of simplicity in this sample however I'll just use regular SMTP server to send the notifications.
 - Since I don't have an SMTP server configured, the best way to try out the notifications is to use smtp4dev tool [http://smtp4dev.codeplex.com/]
 - For the expiration part, the way I've decided to do it is via the CacheManager class. Whenever adding an item to the inventory a cache will be created with the specified expiration, so upon eviction a delegate will execute and send the recipients a notification.
+- Security has been designed on a Windows Authentication basis and SSL. Since it's a service directed towards a company's inventory, I'd discard other more complex authentication mechanisms such as OAuth (do we really need to log in using a facebook account? ;-D).
+Instead, just securing the app using HTTPS and using windows authentication should suffice for this exercise.
+Given how this is a solution in Visual Studio running under IISExpress, it's very simple to use, just click the WebAPI project and select these values:
+[Anonymous Authentication=Disabled], [SSL Enabled=True], [Windows Authentication=Enabled].
+Next uncomment the controller attribute [Authorize] and after building use the https uri that gets generated to manually test the application.
+What this does is changing the applicationhost.config file behind the scenes (user dependent so you won't see it commited in GitHub) that dictates how IISExpress works.
+- In "real life" hosting it in IIS for example you'd have to install a server certificate and deal with the authentication/authorization using the IIS Manager console.
 
 ## Assumptions:
 - For unit testing the notification messages, they're dump in c:\tmp folder, so it needs to exist beforehand and make sure nobody else writes to that folder.
@@ -31,3 +38,4 @@ For the sake of simplicity in this sample however I'll just use regular SMTP ser
 - No dealing with string constants for error messages.
 - HttpStatusCode 422 is not included in the .Net enumeration, so "hardcoded" it there to return a more menaningful response.
 - Didn't deal with verification of appsettings correctness or whether the values exist or not. For this demo I'll assume they're all provided.
+- Don't care much about web.config transformations for production (such as setting debug=false, which is done by default, but others that may be needed...).

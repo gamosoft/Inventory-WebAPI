@@ -11,6 +11,8 @@ namespace Inventory.WebAPI.Controllers
     /// <summary>
     /// Controller for Inventory operations
     /// </summary>
+    // Uncomment the following line when authentication is put in place to test with Windows credentials
+    // [Authorize]
     public class InventoryController : ApiController
     {
         #region "Methods"
