@@ -125,7 +125,6 @@ namespace Inventory.DAL
         /// <param name="arguments">CacheEntryRemovedArguments</param>
         private void CachedItemRemovedCallback(CacheEntryRemovedArguments arguments)
         {
-            // Instead of the key we get the value's label (as the key is stored in lowercase)
             NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
         }
 

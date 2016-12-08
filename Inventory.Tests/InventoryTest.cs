@@ -90,10 +90,9 @@ namespace Inventory.Tests
                 Type = ItemType.TypeB
             };
             controller.Post(sample);
-            var result = controller.Get();
-            result = result as ICollection<Item>;
+            var result = controller.Get() as ICollection<Item>;
             Assert.IsNotNull(result);
-            // Assert.AreEqual(result.Count, 4);
+            Assert.AreEqual(result.Count, 4);
         }
 
         /// <summary>
