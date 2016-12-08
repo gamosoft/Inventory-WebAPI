@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -13,10 +14,10 @@ namespace Inventory.DAL
     {
         #region "Variables"
 
-        private static volatile InventorySingleton instance;
-        private static object syncRoot = new Object();
-        private List<Item> _repository;
-        private static volatile MemoryCache cache;
+        private static volatile InventorySingleton _instance;
+        private static object _syncRoot = new Object();
+        private ConcurrentDictionary<string, Item> _repository;
+        private static volatile MemoryCache _cache;
 
         #endregion "Variables"
 
@@ -29,16 +30,16 @@ namespace Inventory.DAL
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    lock (syncRoot)
+                    lock (_syncRoot)
                     {
-                        if (instance == null)
-                            instance = new InventorySingleton();
+                        if (_instance == null)
+                            _instance = new InventorySingleton();
                     }
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
@@ -51,8 +52,8 @@ namespace Inventory.DAL
         /// </summary>
         private InventorySingleton()
         {
-            _repository = new List<Item>();
-            cache = new MemoryCache("Inventory");
+            _repository = new ConcurrentDictionary<string, Item>(StringComparer.InvariantCultureIgnoreCase);
+            _cache = new MemoryCache("Inventory");
             InitializeDummyData();
         }
 
@@ -63,24 +64,26 @@ namespace Inventory.DAL
         /// <returns>Empty if all went well, otherwise error message</returns>
         public string Add(Item item)
         {
-            lock (syncRoot)
+            lock (_syncRoot)
             {
                 if (item.Expiration <= DateTime.Now)
                 {
                     return "Item already expired";
                 }
-                // Simple lowercase check to see that label doesn't exist
-                if (_repository.Any(i => i.Label.ToLower() == item.Label.ToLower()))
+                if (String.IsNullOrEmpty(item.Label))
+                {
+                    return "Item is missing label";
+                }
+                if (!_repository.TryAdd(item.Label, item))
                 {
                     return "Label already exists";
                 }
-                _repository.Add(item);
                 CacheItemPolicy policy = new CacheItemPolicy()
                 {
                     AbsoluteExpiration = new DateTimeOffset(item.Expiration),
                     RemovedCallback = CachedItemRemovedCallback
                 };
-                cache.Add(item.Label, item, policy);
+                _cache.Add(item.Label.ToLower(), item, policy);
             }
             return String.Empty;
         }
@@ -92,7 +95,7 @@ namespace Inventory.DAL
         /// <returns>Enumerable collection of items in the inventory</returns>
         public IEnumerable<Item> GetAll()
         {
-            return _repository;
+            return _repository.Values;
         }
 
         /// <summary>
@@ -104,14 +107,12 @@ namespace Inventory.DAL
         public Item GetByLabel(string label)
         {
             Item result;
-            lock (syncRoot)
+            lock (_syncRoot)
             {
-                result = _repository.FirstOrDefault(i => i.Label.ToLower() == label.ToLower());
-                if (result != null)
+                if (_repository.TryRemove(label, out result))
                 {
-                    _repository.Remove(result);
                     // Remove from cache as well!
-                    cache.Remove(result.Label); // TODO: If manually removed also triggers an "expired" notification
+                    _cache.Remove(result.Label.ToLower()); // TODO: If manually removed also triggers an "expired" notification
                     NotificationManager.SendNotification(String.Format("Item '{0}' removed", result.Label));
                 }
             }
@@ -124,6 +125,7 @@ namespace Inventory.DAL
         /// <param name="arguments">CacheEntryRemovedArguments</param>
         private void CachedItemRemovedCallback(CacheEntryRemovedArguments arguments)
         {
+            // Instead of the key we get the value's label (as the key is stored in lowercase)
             NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
         }
 
