@@ -112,7 +112,7 @@ namespace Inventory.DAL
                 if (_repository.TryRemove(label, out result))
                 {
                     // Remove from cache as well!
-                    _cache.Remove(result.Label.ToLower()); // TODO: If manually removed also triggers an "expired" notification
+                    _cache.Remove(result.Label.ToLower());
                     NotificationManager.SendNotification(String.Format("Item '{0}' removed", result.Label));
                 }
             }
@@ -125,7 +125,10 @@ namespace Inventory.DAL
         /// <param name="arguments">CacheEntryRemovedArguments</param>
         private void CachedItemRemovedCallback(CacheEntryRemovedArguments arguments)
         {
-            NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
+            if (arguments.RemovedReason != CacheEntryRemovedReason.Removed)
+            {
+                NotificationManager.SendNotification(String.Format("Item '{0}' expired!!!", arguments.CacheItem.Key));
+            }
         }
 
         /// <summary>
