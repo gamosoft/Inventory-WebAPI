@@ -4,6 +4,11 @@
 - Alternatively you can also execute the web project (Inventory.WebAPI) and invoke the API methods via web browser/Fiddler.
 - Shameless plug here, you can use the Fiddler extension I developed a while ago to make things easier ;-) [http://fiddlertreeviewpanel.codeplex.com/]
 - The WebAPI works by default with JSON, but can also work with XML data (using the corresponding headers in Fiddler for example).
+- In the initialization of the app I provide some dummy data to aid in testing through the method "InitializeDummyData" which should be removed prior to deployment of course.
+
+## Documentation (new)
+- Just for kicks, I've added the swagger-style documentation that gets generated automatically so you have an additional way of testing the operations.
+- It can be accessed in the /swagger folder, such as [http://localhost:2099/swagger]
 
 ## Design notes:
 - I have not coded against DB. I have implemented an in-memory storage solution making it thread-safe via the Singleton pattern so there are no issues given the multi-thread nature of web services.
